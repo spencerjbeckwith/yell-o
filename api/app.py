@@ -7,13 +7,14 @@ from werkzeug.exceptions import HTTPException, BadRequest
 import os
 import traceback
 
-def create_app(client: ElevenLabs | None=None, build_ui=True) -> Flask:
+def create_app(client: ElevenLabs | None=None, check_ui=True) -> Flask:
     load_dotenv()
 
     # Ensure the UI app has been built
-    if build_ui is True:
-        # TODO
-        pass
+    if check_ui is True:
+        ui_dir = os.path.join(os.getcwd(), "ui/dist")
+        if not os.path.exists(ui_dir):
+            raise Exception("The UI has not been built! Build it first via 'cd ui && npm install && npm run build'.")
 
     # Create clients
     app = Flask(

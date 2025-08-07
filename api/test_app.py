@@ -6,7 +6,7 @@ from flask.testing import FlaskClient
 @pytest.fixture()
 def app(mocker):
     mock_client = mocker.MagicMock()
-    return create_app(client=mock_client, build_ui=False)
+    return create_app(client=mock_client, check_ui=False)
 
 @pytest.fixture()
 def client(app: Flask):
