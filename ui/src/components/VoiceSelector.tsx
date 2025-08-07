@@ -4,6 +4,7 @@ import { CaretDownIcon } from "@radix-ui/react-icons";
 import css from "./VoiceSelector.module.css";
 import classNames from "classnames";
 import Spinner from "./Spinner";
+import VoiceTile from "./VoiceTile";
 
 function CategorySelect(props: {
     name: VoiceCategories | null;
@@ -91,49 +92,55 @@ export default function VoiceSelector(props: {
             [css.open]: !collapsed,
         })}>
             <div className={css.header}>
+                <div style={{width: "2em"}}></div>
                 <h2>Select Voice</h2>
                 <CaretDownIcon className={css.caret} width="2em" height="2em" onClick={() => setCollapsed(!collapsed)}/>
             </div>
             { !collapsed && <>
-                <input className={css.search} type="text" placeholder="Search..." onChange={(e) => {
-                    setSearch(e.target.value);
-                }}/>
-                
-                <CategorySelect
-                    name={null}
-                    currentCategory={category}
-                    setCategory={setCategory}
-                >No Category</CategorySelect>
+                <div className={css.options}>
+                    <input className={css.search} type="text" placeholder="Search..." onChange={(e) => {
+                        setSearch(e.target.value);
+                    }}/>
+                    
+                    <CategorySelect
+                        name={null}
+                        currentCategory={category}
+                        setCategory={setCategory}
+                    >No Category</CategorySelect>
 
-                <CategorySelect
-                    name="premade"
-                    currentCategory={category}
-                    setCategory={setCategory}
-                >Premade Voices</CategorySelect>
+                    <CategorySelect
+                        name="premade"
+                        currentCategory={category}
+                        setCategory={setCategory}
+                    >Premade Voices</CategorySelect>
 
-                <CategorySelect
-                    name="generated"
-                    currentCategory={category}
-                    setCategory={setCategory}
-                >Generated Voices</CategorySelect>
+                    <CategorySelect
+                        name="generated"
+                        currentCategory={category}
+                        setCategory={setCategory}
+                    >Generated Voices</CategorySelect>
 
-                <CategorySelect
-                    name="cloned"
-                    currentCategory={category}
-                    setCategory={setCategory}
-                >Cloned Voices</CategorySelect>
+                    <CategorySelect
+                        name="cloned"
+                        currentCategory={category}
+                        setCategory={setCategory}
+                    >Cloned Voices</CategorySelect>
 
-                <CategorySelect
-                    name="professional"
-                    currentCategory={category}
-                    setCategory={setCategory}
-                >Professional Voices</CategorySelect>
+                    <CategorySelect
+                        name="professional"
+                        currentCategory={category}
+                        setCategory={setCategory}
+                    >Professional Voices</CategorySelect>
+                </div>
 
                 { isLoading && <Spinner/> }
 
                 { voices ? <div className={css.voices}>
                     {voices.map((voice, index) => (
-                        <p key={index}>{ voice.name }</p>
+                        <VoiceTile voice={voice} key={index} onClick={() => {
+                            setVoice(voice);
+                            setCollapsed(true);
+                        }}/>
                     ))}
                 </div> : <>
                     {error && <p className={css.error}><strong>{ error }</strong></p>}
