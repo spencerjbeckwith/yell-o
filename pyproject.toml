@@ -1,0 +1,28 @@
+[project]
+name = "yell-o"
+version = "0.1.0"
+description = "For when you're too lazy to walk into the next room to say something."
+license = {text = "WTFPL"}
+authors = [
+    {name = "Spencer Beckwith", email = "spencerjbeckwith@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "flask (>=3.1.1,<4.0.0)",
+    "python-dotenv (>=1.1.1,<2.0.0)",
+]
+
+[project.urls]
+repository="https://github.com/spencerjbeckwith/yell-o"
+
+[tool.poetry]
+packages = [{include = "api"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project.scripts]
+dev = "api:dev"
+start = "api:prod"
