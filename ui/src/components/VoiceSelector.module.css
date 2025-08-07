@@ -1,0 +1,59 @@
+.outer {
+    margin: 1rem;
+    background-color: #eeeeee;
+    border-radius: 8px;
+    padding: 0.25em 0.5em;
+}
+
+.header {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.caret {
+    transition: background-color 100ms;
+    background-color: #eeeeee;
+    border-radius: 4px;
+}
+
+.caret:hover {
+    cursor: pointer;
+    background-color: lightgray;
+}
+
+.options {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75em;
+}
+
+.category {
+    padding: 0.5em;
+    display: block;
+}
+
+.search {
+    margin: 0.25em;
+    padding: 0.5em;
+    border: none;
+    border-radius: 4px;
+}
+
+.novoices {
+    text-align: center;
+    color: #444444;
+}
+
+.error {
+    text-align: center;
+    color: red;
+}
+
+.voices {
+    max-height: 600px;
+    overflow: scroll;
+}

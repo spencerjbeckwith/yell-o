@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from werkzeug.exceptions import HTTPException, BadRequest
 import os
 import traceback
+from flask_cors import CORS
 
 def create_app(client: ElevenLabs | None=None, check_ui=True) -> Flask:
     load_dotenv()
@@ -22,6 +23,7 @@ def create_app(client: ElevenLabs | None=None, check_ui=True) -> Flask:
         static_folder="../ui/dist/assets",
         template_folder="../ui/dist",
     )
+    CORS(app)
     if client is None:
         # Only create client if it isn't injected
         elevenlabs_api_key = os.getenv("ELEVENLABS_API_KEY")

@@ -1,0 +1,23 @@
+.header {
+    text-align: center;
+    color: #b89d08;
+    font-size: 40px;
+    padding: 0;
+    margin: 0;
+}
+
+html {
+    background-color: #3d3b33;
+}
+
+main {
+    margin: 0 auto;
+    padding: 0;
+    height: 100vh;
+}
+
+body {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fcfcfc;
+}
