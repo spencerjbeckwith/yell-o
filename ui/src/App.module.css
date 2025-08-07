@@ -18,6 +18,10 @@ h3 {
     font-size: 24px;
 }
 
+p, label, span, h1, h2, h3 {
+    font-family: sans-serif;
+}
+
 main {
     margin: 0 auto;
     padding: 1em;
@@ -36,6 +40,7 @@ body {
 .box {
     display: flex;
     gap: 1rem;
+    justify-content: center;
 }
 
 .box textarea {
@@ -54,4 +59,44 @@ body {
         flex-wrap: wrap;
         justify-content: center;
     }
+
+    .box textarea {
+        min-height: 200px;
+    }
+}
+
+.speak {
+    background-color: #E6E3DB;
+    transition: background-color 100ms;
+    padding: 1em 0.75em;
+    border: none;
+    border-radius: 6px;
+    font-size: 20px;
+    color: #CC8F00;
+    border: 2px solid #CC8F00;
+    font-weight: bold;
+    margin: 1em;
+    width: 98px;
+    height: 94px;
+}
+
+.speak:hover {
+    cursor: pointer;
+    background-color: #D4CFC4;
+}
+
+.speak.submitting {
+    border-color: #605843;
+    color: #605843;
+}
+
+.speak.submitting:hover {
+    background-color: #E6E3DB;
+    cursor: unset;
+}
+
+.error {
+    text-align: center;
+    color: #9B4E46;
+    font-weight: bold;
 }

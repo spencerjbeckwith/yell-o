@@ -57,7 +57,8 @@
 
 .error {
     text-align: center;
-    color: red;
+    color: #9B4E46;
+    font-weight: bold;
 }
 
 .voices {

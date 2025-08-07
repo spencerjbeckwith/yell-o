@@ -19,7 +19,7 @@
         transform:rotate(0deg);
     }
     50% {
-        color: #FFE7AD;
+        color: #CC8F00;
     }
     to {
         transform:rotate(360deg);

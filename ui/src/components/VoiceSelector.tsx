@@ -5,6 +5,7 @@ import css from "./VoiceSelector.module.css";
 import classNames from "classnames";
 import Spinner from "./Spinner";
 import VoiceTile from "./VoiceTile";
+import getUrl from "../getUrl";
 
 function CategorySelect(props: {
     name: VoiceCategories | null;
@@ -57,12 +58,13 @@ export default function VoiceSelector(props: {
                 if (category) {
                     params.set("category", category);
                 }
-                const response = await fetch(`${window.location.protocol}//${window.location.hostname}:5000/voices?${params.toString()}`, {
+                const response = await fetch(`${getUrl()}/voices?${params.toString()}`, {
                     signal: abort.signal,
                 });
                 const result = await response.json();
                 if (!response.ok) {
                     setError(`Unable to load voices: ${result.error}`);
+                    throw result;
                 }
                 setVoices(result.voices);
             } catch (err: unknown) {
