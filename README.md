@@ -8,13 +8,19 @@ Each running application is a Flask app that serves a static React frontend. Thi
 
 Must have Poetry>2.1 installed. If you have a lower version, upgrade first via `pipx upgrade poetry` or `poetry self upgrade`.
 
-`poetry install`
+```
+sudo apt-get update
+sudo apt-get install libportaudio2 libportaudiocpp0 portaudio19-dev libasound-dev libsndfile1-dev -y
+./install.sh
+```
+
+The odd-looking system dependencies are so ElevenLabs can use pyaudio to play the results.
 
 Then create a `.env` file in the repository root with the following variables:
 
 ### Required Variables
 
-- None yet!
+- `ELEVENLABS_API_KEY`
 
 ### Optional Variables
 

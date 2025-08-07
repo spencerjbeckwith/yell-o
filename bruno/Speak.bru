@@ -1,0 +1,18 @@
+meta {
+  name: Speak
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:5000/speak
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "text": "Hi, Kevin...",
+    "voice_id": "21m00Tcm4TlvDq8ikWAM"
+  }
+}
