@@ -32,3 +32,9 @@ Then create a `.env` file in the repository root with the following variables:
 `poetry run start` will run the app in *production* mode.
 
 `poetry run dev` will run the app in *development* mode, with Flask debug and hot-reload enabled on code change.
+
+## Development
+
+There is a [bruno](https://www.usebruno.com/) collection under the `/bruno` directory, which can be used to easily test the API.
+
+You can run API tests with `poetry run pytest`.

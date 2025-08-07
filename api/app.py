@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from elevenlabs import play
 from elevenlabs.client import ElevenLabs
 from elevenlabs.core import ApiError
@@ -7,19 +7,38 @@ from werkzeug.exceptions import HTTPException, BadRequest
 import os
 import traceback
 
-def create_app():
+def create_app(client: ElevenLabs | None=None, build_ui=True) -> Flask:
     load_dotenv()
 
-    # Validate config
-    elevenlabs_api_key = os.getenv("ELEVENLABS_API_KEY")
-    if elevenlabs_api_key is None:
-        raise Exception("ELEVENLABS_API_KEY environment variable must be set!")
+    # Ensure the UI app has been built
+    if build_ui is True:
+        # TODO
+        pass
 
     # Create clients
-    app = Flask(__name__)
-    client = ElevenLabs(
-        api_key=elevenlabs_api_key,
+    app = Flask(
+        __name__,
+        static_folder="../ui/dist/assets",
+        template_folder="../ui/dist",
     )
+    if client is None:
+        # Only create client if it isn't injected
+        elevenlabs_api_key = os.getenv("ELEVENLABS_API_KEY")
+        if elevenlabs_api_key is None:
+            raise Exception("ELEVENLABS_API_KEY environment variable must be set!")
+        client = ElevenLabs(
+            api_key=elevenlabs_api_key,
+        )
+
+    # Static files
+    @app.route("/")
+    @app.route("/<path:path>")
+    def static_files(path=""):
+        full_path = os.path.join(app.static_folder, path)
+        if path != "" and os.path.exists(full_path):
+            return send_from_directory(app.static_folder, path)
+        else:
+            return send_from_directory(app.template_folder, "index.html")
 
     ### Endpoints ###
 
@@ -47,12 +66,13 @@ def create_app():
         voice_id = request.json["voice_id"] if "voice_id" in request.json else None
         if text is None or voice_id is None:
             raise BadRequest("Request body must include 'text' and 'voice_id' properties!")
-        
+
         audio_stream = client.text_to_speech.stream(
             text=text,
             voice_id=voice_id,
         )
-        play(audio_stream)
+        if not app.testing:
+            play(audio_stream)
         return {
             "message": "done!",
         }
