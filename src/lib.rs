@@ -5,6 +5,12 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use reqwest;
 use serde_json;
+use rodio;
+use rodio::{Decoder, OutputStreamBuilder, Sink};
+use std::io::Cursor;
+use warp::reply::{with_status, json};
+use warp::http::StatusCode;
+use log::info;
 
 use crate::config::Config;
 
@@ -14,13 +20,32 @@ struct EndpointData {
     client: reqwest::Client,
 }
 
+// To be received
+#[derive(serde::Deserialize)]
+struct SpeakRequest {
+    text: String,
+    voice_id: String,
+}
+
+// To send to ElevenLabs
+#[derive(serde::Serialize)]
+struct TextToSpeechRequestBody {
+    text: String,
+}
+
 pub fn routes(config: Config) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     // Pass in this struct into each endpoint handler
     let data = Arc::new(EndpointData {
         config,
         client: reqwest::Client::new(),
     });
+    let stream_handle = OutputStreamBuilder::open_default_stream().expect("unable to open default stream");
+    let sink = Arc::new(Sink::connect_new(&stream_handle.mixer()));
     let with_data = warp::any().map(move || data.clone());
+    let with_data_2 = with_data.clone();
+    let with_sink = warp::any().map(move || Arc::clone(&sink));
+
+    // TODO: Why is OutputStream dropped right away? Because of that, nothing plays...
 
     // GET /voices
     let get_voices = warp::path("voices")
@@ -32,7 +57,11 @@ pub fn routes(config: Config) -> impl Filter<Extract = impl warp::Reply, Error =
     // POST /speak
     let post_speak = warp::path("speak")
         .and(warp::post())
-        .map(|| warp::reply::html("Speak!")); // TODO implement this
+        .and(warp::body::content_length_limit(1024 * 16))
+        .and(warp::body::json())
+        .and(with_data_2)
+        .and(with_sink)
+        .and_then(handle_post_speak);
 
     get_voices.or(post_speak)
 }
@@ -69,7 +98,7 @@ async fn handle_get_voices(
                 Ok(json_body) => {
                     if status.is_success() {
                         // Success! Forward our response directly to the client.
-                        Ok(warp::reply::with_status(warp::reply::json(&json_body), status))
+                        Ok(with_status(json(&json_body), status))
                     } else {
                         // API request went through, but wasn't successful.
                         let message = json_body
@@ -95,17 +124,96 @@ async fn handle_get_voices(
         Err(e) => {
             // Failed to make the request altogether
             get_error(
-                warp::http::StatusCode::INTERNAL_SERVER_ERROR,
+                StatusCode::INTERNAL_SERVER_ERROR,
                 format!("Failed to request ElevenLabs API: {}", e)
             )
         }
     }
 }
 
-fn get_error(status: warp::http::StatusCode, message: impl Into<String>) -> Result<warp::reply::WithStatus<warp::reply::Json>, warp::Rejection> {
+async fn handle_post_speak(
+    request: SpeakRequest,
+    data: Arc<EndpointData>,
+    sink: Arc<Sink>,
+) -> Result<impl warp::Reply, warp::Rejection> {
+
+    info!("Voice ID {} to say '{}'", request.voice_id, request.text);
+
+    // Make the request to stream the audio
+    let result = data.client
+        .post(format!("https://api.elevenlabs.io/v1/text-to-speech/{}", request.voice_id))
+        .json(&TextToSpeechRequestBody {
+            text: request.text,
+        })
+        .header("xi-api-key", &data.config.elevenlabs_api_key)
+        .send()
+        .await;
+
+    match result {
+        Ok(response) => {
+            let status = response.status();
+            if status.is_success() {
+                // Play our audio
+                let bytes = response.bytes().await;
+                match bytes {
+                    Ok(bytes) => {
+                        let source = Decoder::new(Cursor::new(bytes));
+                        match source {
+                            Ok(source) => {
+                                sink.append(source);
+
+                                // Send our success response
+                                let confirmed = serde_json::json!({
+                                    "message": "done!",
+                                });
+                                Ok(with_status(json(&confirmed), status))
+                            }
+                            Err(e) => {
+                                get_error(
+                                    StatusCode::INTERNAL_SERVER_ERROR,
+                                    format!("Failed to play returned audio bytes: {}", e),
+                                )
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        get_error(
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            format!("Failed to process voice response bytes: {}", e),
+                        )
+                    }
+                }
+            } else {
+                // API request went through, but wasn't successful.
+                let response_json = response
+                    .json::<serde_json::Value>()
+                    .await
+                    .unwrap_or(serde_json::json!({"detail": { "message": "Unable to process JSON response!" }}));
+                let message = response_json
+                    .get("detail")
+                    .and_then(|detail| detail.get("message"))
+                    .and_then(|message| message.as_str())
+                    .unwrap_or("Unknown error!");
+                get_error(
+                    status,
+                    format!("ElevenLabs API error: {}", message),
+                )
+            }
+        }
+        Err(e) => {
+            // Failed to make the request altogether
+            get_error(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Failed to request ElevenLabs API: {}", e),
+            )
+        }
+    }
+}
+
+fn get_error(status: StatusCode, message: impl Into<String>) -> Result<warp::reply::WithStatus<warp::reply::Json>, warp::Rejection> {
     let error_body = serde_json::json!({
         "status": status.as_u16(),
         "error": message.into(),
     });
-    Ok(warp::reply::with_status(warp::reply::json(&error_body), status))
+    Ok(with_status(json(&error_body), status))
 }
