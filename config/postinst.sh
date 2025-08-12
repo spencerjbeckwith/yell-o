@@ -6,5 +6,9 @@ fi
 usermod -aG audio "yell-o"
 systemctl daemon-reexec
 systemctl daemon-reload
+
+systemctl enable pulseaudio.service
+systemctl start pulseaudio.service
+
 systemctl enable yell-o.service
 systemctl start yell-o.service

@@ -1,0 +1,10 @@
+[Unit]
+Description=PulseAudio system server
+After=sound.target
+
+[Service]
+ExecStart=/usr/bin/pulseaudio --system --disallow-exit --no-cpu-limit
+Restart=on-failure
+
+[install]
+WantedBy=multi-user.target

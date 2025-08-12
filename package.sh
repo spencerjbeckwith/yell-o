@@ -61,6 +61,7 @@ cp config/prerm.sh $build_dir/DEBIAN/prerm
 chmod 755 $build_dir/DEBIAN/prerm
 cp config/yell-o.service $build_dir/lib/systemd/system/
 cp config/yell-o.env $build_dir/etc/$app_name/
+cp config/pulseaudio.service $build_dir/lib/systemd/system/
 
 # Build the UI
 cd ui
