@@ -1,6 +1,7 @@
 pub mod config;
 
 use warp::Filter;
+use warp::hyper::Method;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::path::Path;
@@ -60,6 +61,11 @@ pub fn routes(config: Config) -> impl Filter<Extract = impl warp::Reply, Error =
     let with_data_2 = with_data.clone();
     let with_audio = warp::any().map(move || Arc::clone(&audio));
 
+    let cors = warp::cors()
+        .allow_any_origin()
+        .allow_headers(vec!["Access-Control-Request-Headers", "Access-Control-Request-Method", "Origin", "Accept", "Content-Type", "User-Agent"])
+        .allow_methods(&[Method::GET, Method::POST, Method::OPTIONS]);
+
     // Serve the UI as static files
     let mut static_path = Path::new(PROD_FILES_PATH);
     if !static_path.is_dir() {
@@ -90,7 +96,7 @@ pub fn routes(config: Config) -> impl Filter<Extract = impl warp::Reply, Error =
         .and(with_audio)
         .and_then(handle_post_speak);
 
-    get_voices.or(post_speak).or(get_assets).or(get_static)
+    get_voices.or(post_speak).or(get_assets).or(get_static).with(&cors)
 }
 
 async fn handle_get_voices(
