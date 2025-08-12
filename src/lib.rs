@@ -6,7 +6,7 @@ use std::sync::Arc;
 use reqwest;
 use serde_json;
 use rodio;
-use rodio::{Decoder, OutputStreamBuilder, Sink};
+use rodio::{Decoder, OutputStreamBuilder, OutputStream, Sink};
 use std::io::Cursor;
 use warp::reply::{with_status, json};
 use warp::http::StatusCode;
@@ -33,19 +33,28 @@ struct TextToSpeechRequestBody {
     text: String,
 }
 
+struct WithAudio {
+    _stream: OutputStream, // Stream has to be passed with sink, so it isn't dropped
+    sink: Sink,
+}
+
 pub fn routes(config: Config) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     // Pass in this struct into each endpoint handler
     let data = Arc::new(EndpointData {
         config,
         client: reqwest::Client::new(),
     });
-    let stream_handle = OutputStreamBuilder::open_default_stream().expect("unable to open default stream");
-    let sink = Arc::new(Sink::connect_new(&stream_handle.mixer()));
+
+    let output_stream = OutputStreamBuilder::open_default_stream().expect("unable to open default stream");
+    let sink = Sink::connect_new(&output_stream.mixer());
+    let audio = Arc::new(WithAudio {
+        _stream: output_stream,
+        sink,
+    });
+
     let with_data = warp::any().map(move || data.clone());
     let with_data_2 = with_data.clone();
-    let with_sink = warp::any().map(move || Arc::clone(&sink));
-
-    // TODO: Why is OutputStream dropped right away? Because of that, nothing plays...
+    let with_audio = warp::any().map(move || Arc::clone(&audio));
 
     // GET /voices
     let get_voices = warp::path("voices")
@@ -60,7 +69,7 @@ pub fn routes(config: Config) -> impl Filter<Extract = impl warp::Reply, Error =
         .and(warp::body::content_length_limit(1024 * 16))
         .and(warp::body::json())
         .and(with_data_2)
-        .and(with_sink)
+        .and(with_audio)
         .and_then(handle_post_speak);
 
     get_voices.or(post_speak)
@@ -134,7 +143,7 @@ async fn handle_get_voices(
 async fn handle_post_speak(
     request: SpeakRequest,
     data: Arc<EndpointData>,
-    sink: Arc<Sink>,
+    audio: Arc<WithAudio>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
 
     info!("Voice ID {} to say '{}'", request.voice_id, request.text);
@@ -160,7 +169,7 @@ async fn handle_post_speak(
                         let source = Decoder::new(Cursor::new(bytes));
                         match source {
                             Ok(source) => {
-                                sink.append(source);
+                                audio.sink.append(source);
 
                                 // Send our success response
                                 let confirmed = serde_json::json!({
