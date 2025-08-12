@@ -8,6 +8,17 @@
     overflow: scroll;
 }
 
+@media screen and (max-width: 500px) {
+    .tile {
+        width: 100%;
+        height: unset;
+    }
+
+    .tile p {
+        text-align: center;
+    }
+}
+
 .tile h3 {
     text-align: center;
     margin: 0;

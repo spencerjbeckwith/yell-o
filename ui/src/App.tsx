@@ -15,8 +15,8 @@ export default function App() {
     const [isDone, setIsDone] = useState(false);
     return (
         <main>
-            <h1>yell-o @ { window.location.hostname}</h1>
-            <p className={css.centered}><i>Yell-o? Can you hear me yet???</i></p>
+            <h1>yell-o</h1>
+            <p className={css.centered}><i>What do you have to say?</i></p>
             <VoiceSelector voice={voice} setVoice={setVoice}/>
             { voice &&
                 <div>
@@ -31,7 +31,11 @@ export default function App() {
                                 [css.submitting]: submitting,
                             })}
                             onClick={() => {
-                                if (!submitting && text.length > 0) {
+                                if (text.length === 0) {
+                                    setError("Enter something to say first!");
+                                    return;
+                                }
+                                if (!submitting) {
                                     setText("");
                                     setError(null);
                                     setSubmitting(true);

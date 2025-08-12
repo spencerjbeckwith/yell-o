@@ -93,12 +93,12 @@ export default function VoiceSelector(props: {
             [css.outer]: true,
             [css.open]: !collapsed,
         })}>
-            <div className={css.header}>
+            <div className={css.header} onClick={() => setCollapsed(!collapsed)}>
                 <div style={{width: "2em"}}></div>
                 <h2>Select Voice</h2>
-                <CaretDownIcon className={css.caret} width="2em" height="2em" onClick={() => setCollapsed(!collapsed)}/>
+                <CaretDownIcon className={css.caret} width="2em" height="2em"/>
             </div>
-            { !collapsed && <>
+            { !collapsed && <div className={css.inner}>
                 <div className={css.options}>
                     <input className={css.search} type="text" placeholder="Search..." onChange={(e) => {
                         setSearch(e.target.value);
@@ -148,7 +148,7 @@ export default function VoiceSelector(props: {
                     {error && <p className={css.error}><strong>{ error }</strong></p>}
                 </>}
                 { voices && voices.length === 0 && <p className={css.novoices}><i>No voices found.</i></p>}
-            </>}
+            </div>}
         </div>
     );
 }

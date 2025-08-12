@@ -2,7 +2,6 @@
     margin: 1rem 0;
     background-color: #EEECE8;
     border-radius: 8px;
-    padding: 0.25em 0.5em;
 }
 
 .header {
@@ -10,17 +9,18 @@
     width: 100%;
     justify-content: space-between;
     align-items: center;
+    margin: 0;
+    border-radius: 8px;
 }
 
-.caret {
-    transition: background-color 100ms;
-    background-color: #EEECE8;
-    border-radius: 4px;
-}
-
-.caret:hover {
+.header:hover {
     cursor: pointer;
     background-color: #D4CFC4;
+    transition: background-color 100ms;
+}
+
+.inner {
+    padding: 0.5em;
 }
 
 .options {

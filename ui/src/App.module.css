@@ -1,6 +1,6 @@
 h1 {
     text-align: center;
-    color: #FDCA40;
+    color: #F5AB00;
     font-size: 40px;
     padding: 0;
     margin: 0;
@@ -14,7 +14,7 @@ h2 {
 
 h3 {
     text-align: center;
-    color: #CC8F00;
+    color: #F5AB00;
     font-size: 24px;
 }
 
@@ -72,8 +72,7 @@ body {
     border: none;
     border-radius: 6px;
     font-size: 20px;
-    color: #CC8F00;
-    border: 2px solid #CC8F00;
+    color: #F5AB00;
     font-weight: bold;
     margin: 1em;
     width: 98px;
