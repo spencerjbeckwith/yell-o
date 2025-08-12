@@ -3,6 +3,7 @@ pub mod config;
 use warp::Filter;
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::path::Path;
 use reqwest;
 use serde_json;
 use rodio;
@@ -13,6 +14,9 @@ use warp::http::StatusCode;
 use log::info;
 
 use crate::config::Config;
+
+const PROD_FILES_PATH: &str = "/etc/yell-o/ui";
+const DEV_STATIC_PATH: &str = "./ui/dist";
 
 #[derive(Clone)]
 struct EndpointData {
@@ -56,6 +60,20 @@ pub fn routes(config: Config) -> impl Filter<Extract = impl warp::Reply, Error =
     let with_data_2 = with_data.clone();
     let with_audio = warp::any().map(move || Arc::clone(&audio));
 
+    // Serve the UI as static files
+    let mut static_path = Path::new(PROD_FILES_PATH);
+    if !static_path.is_dir() {
+        static_path = Path::new(DEV_STATIC_PATH);
+    } else {
+        panic!("unable to locate either {} or {}, one of which must contain yell-o's built ui files", PROD_FILES_PATH, DEV_STATIC_PATH);
+    }
+    let assets_path = static_path.join(Path::new("assets"));
+    info!("Static directory: {}", static_path.to_str().unwrap_or(""));
+    let get_static = warp::path::end()
+        .and(warp::fs::dir(static_path));
+    let get_assets = warp::path("assets")
+        .and(warp::fs::dir(assets_path));
+
     // GET /voices
     let get_voices = warp::path("voices")
         .and(warp::get())
@@ -72,7 +90,7 @@ pub fn routes(config: Config) -> impl Filter<Extract = impl warp::Reply, Error =
         .and(with_audio)
         .and_then(handle_post_speak);
 
-    get_voices.or(post_speak)
+    get_voices.or(post_speak).or(get_assets).or(get_static)
 }
 
 async fn handle_get_voices(
