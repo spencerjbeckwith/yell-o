@@ -2,7 +2,7 @@ Package: yell-o
 Version: VERSION
 Section: base
 Priority: optional
-Architecture: amd64
+Architecture: ARCHITECTURE
 Maintainer: Spencer Beckwith <spencerjbeckwith@gmail.com>
 Description: For when you're too lazy to walk into the next room to say something.
 Pre-Depends: pulseaudio
