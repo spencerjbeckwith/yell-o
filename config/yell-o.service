@@ -1,0 +1,14 @@
+[Unit]
+Description="yell-o"
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/yell-o
+Restart=on-failure
+RestartSec=5
+User=yell-o
+Group=yell-o
+EnvironmentFile=/etc/yell-o/yell-o.env
+
+[Install]
+WantedBy=multi-user.target
