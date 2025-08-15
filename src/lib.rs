@@ -70,8 +70,9 @@ pub fn routes(config: Config) -> impl Filter<Extract = impl warp::Reply, Error =
     let mut static_path = Path::new(PROD_FILES_PATH);
     if !static_path.is_dir() {
         static_path = Path::new(DEV_STATIC_PATH);
-    } else {
-        panic!("unable to locate either {} or {}, one of which must contain yell-o's built ui files", PROD_FILES_PATH, DEV_STATIC_PATH);
+        if !static_path.is_dir() {
+            panic!("unable to locate either {} or {}, one of which must contain yell-o's built ui files", PROD_FILES_PATH, DEV_STATIC_PATH);
+        }
     }
     let assets_path = static_path.join(Path::new("assets"));
     info!("Static directory: {}", static_path.to_str().unwrap_or(""));
